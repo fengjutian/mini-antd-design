@@ -1,6 +1,6 @@
 [build]
   command = "npm run docs:build"
-  publish = ".dumi/dist"
+  publish = "dist"
 
 [[redirects]]
   from = "/*"
