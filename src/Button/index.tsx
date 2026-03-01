@@ -1,7 +1,9 @@
 import React, { type FC } from 'react';
 
 const Button: FC<{ title: string; onClick?: () => void }> = (props) => (
-  <h4 onClick={props.onClick}>{props.title}</h4>
+  <button type="button" onClick={props.onClick}>
+    {props.title}
+  </button>
 );
 
 export default Button;

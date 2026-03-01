@@ -104,35 +104,41 @@ const renderGlobalMessages = () => {
   });
 };
 
+// 创建全局容器
+const createGlobalContainer = () => {
+  if (isBrowser && !globalContainer) {
+    globalContainer = document.createElement('div');
+    globalContainer.className = 'ant-message';
+    const config = getGlobalConfig();
+    Object.assign(globalContainer.style, {
+      top: `${config.top}px`,
+      position: 'fixed',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: '1010',
+      width: '100%',
+      maxWidth: '400px',
+      pointerEvents: 'none',
+    });
+    const container = config.getContainer
+      ? config.getContainer()
+      : document.body;
+    container.appendChild(globalContainer);
+  }
+};
+
 // 创建全局消息实例
 const createGlobalInstance = () => {
+  // 确保容器已创建
+  createGlobalContainer();
+
   if (!globalInstance) {
-    let messages: MessageItem[] = [];
+    const state: { messages: MessageItem[] } = { messages: [] };
     const config = getGlobalConfig();
     const timers = new Map<string | number, NodeJS.Timeout>();
 
-    // 创建全局容器
-    if (isBrowser && !globalContainer) {
-      globalContainer = document.createElement('div');
-      globalContainer.className = 'ant-message';
-      Object.assign(globalContainer.style, {
-        top: `${config.top}px`,
-        position: 'fixed',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: '1010',
-        width: '100%',
-        maxWidth: '400px',
-        pointerEvents: 'none',
-      });
-      const container = config.getContainer
-        ? config.getContainer()
-        : document.body;
-      container.appendChild(globalContainer);
-    }
-
     const removeMessage = (key: string | number) => {
-      messages = messages.filter((item) => item.key !== key);
+      state.messages = state.messages.filter((item) => item.key !== key);
       if (timers.has(key)) {
         clearTimeout(timers.get(key)!);
         timers.delete(key);
@@ -160,16 +166,20 @@ const createGlobalInstance = () => {
         };
 
         // 检查是否已存在相同 key 的消息
-        const existingIndex = messages.findIndex((item) => item.key === key);
+        const existingIndex = state.messages.findIndex(
+          (item) => item.key === key,
+        );
         if (existingIndex !== -1) {
           // 更新现有消息
-          messages[existingIndex] = newMessage;
+          state.messages[existingIndex] = newMessage;
         } else {
           // 添加新消息
-          messages = [...messages, newMessage];
+          state.messages = [...state.messages, newMessage];
           // 限制最大消息数
-          if (messages.length > config.maxCount!) {
-            messages = messages.slice(messages.length - config.maxCount!);
+          if (state.messages.length > config.maxCount!) {
+            state.messages = state.messages.slice(
+              state.messages.length - config.maxCount!,
+            );
           }
         }
 
@@ -198,7 +208,7 @@ const createGlobalInstance = () => {
       } else {
         timers.forEach((timer) => clearTimeout(timer));
         timers.clear();
-        messages = [];
+        state.messages = [];
         // 清空容器
         if (globalContainer) {
           globalContainer.innerHTML = '';
@@ -207,7 +217,9 @@ const createGlobalInstance = () => {
     };
 
     globalInstance = {
-      messages,
+      get messages() {
+        return state.messages;
+      },
       addMessage,
       removeMessage,
       destroy,
