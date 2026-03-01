@@ -1,212 +1,169 @@
-# PRD：{组件能力封装名称}（Ant Design v6）
+﻿# PRD 模板：{组件能力封装名称}（Ant Design v6）
+
+> 用于定义“可直接进入开发”的组件封装需求。模板适用于 `src/*` 下的 React + TypeScript 组件。
 
 ## 0. 背景与目标
 
-**背景**：{为什么要封装/迁移？现状痛点：分散使用、体验不一致、上下文不一致、迁移成本等}  
-**目标**：基于 Ant Design v6 的 {组件名}，提供一套在任意业务模块可复用的统一能力封装，并确保在主题/国际化/容器/权限等上下文下表现一致。
+**背景**
 
----
+- 现状痛点：{分散使用 / 体验不一致 / 上下文割裂 / 迁移成本高}
+- 业务影响：{效率、稳定性、可维护性、可测试性}
 
-## 1. 范围（In Scope / Out of Scope）
+**目标**
 
-### In Scope
+- 基于 Ant Design v6 的 `{组件名}` 做统一封装
+- 提供稳定、可预测、可测试的业务 API
+- 保证在 `ConfigProvider` / `App` / locale / token / 容器下行为一致
+
+## 1. 范围
+
+### 1.1 In Scope
 
 - {能力点 1}
 - {能力点 2}
 - {能力点 3}
-- {支持的调用方式：静态/实例/Hook/组件式等}
-- {全局配置能力：token/locale/容器/默认行为}
+- {调用方式：组件式 / Hook / 静态入口}
+- {全局配置能力：默认值 / 容器 / 主题 / 国际化}
 
-### Out of Scope（明确不做）
+### 1.2 Out of Scope
 
-- {不做的扩展能力，避免 scope creep}
-- {替代方案指引：例如复杂场景用 Notification/Modal 等}
-
----
+- {明确不做的能力，避免 scope creep}
+- {复杂场景替代方案指引}
 
 ## 2. 术语
 
 - **{术语 1}**：{解释}
 - **{术语 2}**：{解释}
-- **Context**：`ConfigProvider/App` 提供的主题、国际化、前缀、容器等配置。
+- **Context**：`ConfigProvider` / `App` 提供的主题、国际化、prefixCls、容器等信息
 
----
+## 3. 功能需求（FR）
 
-## 3. 用户故事 / 需求点（Functional Requirements）
-
-> 每条需求包含：描述 + 验收标准（AC）。
+> 每条需求都必须给出可测试的 AC（Acceptance Criteria）。
 
 ### FR-001：{核心能力}
 
-- 作为用户，我在 {业务场景} 时，应能够 {看到/完成/操作}。
+- 用户故事：作为{角色}，在{场景}下，我需要{行为}
+- AC
+- {默认行为可验证}
+- {参数和回调可验证}
+- {与全局配置一致可验证}
 
-**AC**
+### FR-002：{策略能力：默认值、禁用、校验、并发等}
 
-- {可见性/交互性/默认行为}
-- {参数支持与兼容性：ReactNode/formatter/回调等}
-- {与全局配置一致}
+- AC
+- {条件 1}
+- {条件 2}
 
-### FR-002：{默认策略/关闭策略/校验策略/分页策略...}
+### FR-003：{受控/非受控能力}
 
-**AC**
+- AC
+- {value 优先级}
+- {defaultValue 仅初始化生效}
+- {同 key 更新不重挂载（如适用）}
 
-- {明确的可测条件 1}
-- {明确的可测条件 2}
+### FR-004：{销毁/重置/更新}
 
-### FR-003：{并发/队列/缓存/防抖等}
+- AC
+- {destroy/reset/update 的明确结果}
 
-**AC**
+### FR-005：{事件与回调}
 
-- {上限、淘汰策略或冲突策略}
-
-### FR-004：{更新/受控/联动能力（如果有）}
-
-**AC**
-
-- {同 key 更新 / 受控 props 优先级 / 状态机规则}
-
-### FR-005：{销毁/重置/卸载}
-
-**AC**
-
-- {destroy/reset 后的预期}
-
-### FR-006：{回调/Thenable/Promise/事件}
-
-**AC**
-
-- {触发时机：成功/失败/关闭/卸载}
-- {与 antd 行为一致性说明}
-
----
+- AC
+- {onChange/onCopy/onExpand/onEnd 等时机定义}
+- {Promise/Thenable 行为定义（如适用）}
 
 ## 4. 非功能需求（NFR）
 
-- NFR-001：统一体验  
-  {默认样式/位置/尺寸/文案/交互一致}
-- NFR-002：不污染业务代码  
-  {业务只能通过封装层调用；禁止直接用 antd 原生 API 的哪些口子}
-- NFR-003：上下文一致性  
-  {必须可消费 ConfigProvider/App：主题、locale、prefixCls、getContainer}
-- NFR-004：可测试性  
-  {暴露稳定 API；提供可控 key/testid；方便单测}
-- NFR-005：可观测性（可选）  
-  {埋点/日志/错误上报策略}
+- NFR-001 统一体验：来自 token 的字体、颜色、间距一致
+- NFR-002 封装边界：业务禁止直接调用被收敛的 antd 原生 API
+- NFR-003 上下文一致性：必须消费 `ConfigProvider` / `App` 信息
+- NFR-004 可测试性：提供稳定 `data-testid` / key / 可控行为
+- NFR-005 可观测性（可选）：埋点、日志、告警策略
 
----
+## 5. 边界与异常（EC）
 
-## 5. 边界条件与异常处理（Edge Cases）
+- EC-001 高频渲染：避免重复创建观察器/实例，控制性能开销
+- EC-002 路由切换/卸载：清理监听器与异步副作用
+- EC-003 SSR：`window/document` 判空与降级
+- EC-004 权限/配置缺失：自动降级并提供开发期 warning
+- EC-005 安全：禁止 `dangerouslySetInnerHTML`（无明确白名单时）
 
-- EC-001：高频触发/批量渲染  
-  {上限/节流/性能要求}
-- EC-002：路由切换/容器卸载  
-  {容器策略；避免 setState on unmounted；清理机制}
-- EC-003：SSR/非浏览器环境  
-  {window/document 保护；降级策略}
-- EC-004：权限/配置缺失  
-  {缺省配置时的行为；开发期 warning}
-- EC-005：安全  
-  {XSS/注入/文件类型限制/外链跳转等}
+## 6. API 设计（开发可落地）
 
----
-
-## 6. API 设计（给落地用）
-
-> 建议封装路径：`src/shared/ui/{domain}/{component}.ts(x)`（可调整）
-
-### 6.1 对外 API（业务调用层）
+### 6.1 对外 API
 
 ```ts
-export interface {Component}Options {
-  // {关键参数：key、duration、placement、size、variant、callbacks...}
+export interface {Component}Props {
+  // 必须包含：类型、是否必填、默认值来源、事件签名
 }
 
 export interface {Component}API {
-  // {主入口：open/show/confirm/render...}
-  // {便捷方法：success/error/...}
-  // {destroy/reset/update...}
+  // 主入口 + 便捷入口 + 销毁/重置/更新入口
 }
 ```
 
-````
-
-### 6.2 全局配置（应用初始化一次）
+### 6.2 全局配置
 
 ```ts
 export interface {Component}GlobalConfig {
-  // {默认值策略：container、locale、token、maxCount、zIndex 等}
+  // 默认行数、tooltip 策略、容器、maxCount、target 等
 }
 
 export function configure{Component}(config: {Component}GlobalConfig): void;
 ```
 
----
+## 7. 实现策略
 
-## 7. 实现方案（Ant Design v6 推荐）
+### 7.1 推荐方案
 
-### 7.1 推荐：使用 App 上下文（可消费 ConfigProvider/App）
+- Root 接入：`<ConfigProvider><App><Bridge/Provider>{children}</Bridge/Provider></App></ConfigProvider>`
+- 组件封装：收敛字段，屏蔽不稳定 API
+- 幂等性：支持多次渲染、多 root、HMR
 
-- 根部接入方式：{ConfigProvider + App + Bridge/Provider}
-- Bridge/依赖注入：{如何把实例写入封装层}
-- 线程安全/幂等：{多次渲染、多 root、HMR}
+### 7.2 降级策略
 
-### 7.2 降级方案（兜底）
+- 无 App Context：回退到安全的基础实现
+- 非浏览器：no-op / 纯渲染降级
+- 开发期：可读 warning，不影响生产稳定性
 
-- {静态 API / no-op / 抛错策略}
-- {开发期 warning 文案}
+### 7.3 与 antd 差异声明
 
-### 7.3 与 antd 差异/约束（必须写清）
+- 仅暴露稳定字段，不透传全部 antd props
+- 明确受控/非受控策略
+- 锁定 antd v6 类型语义
 
-- {字段收敛：只暴露稳定字段}
-- {行为差异：thenable/onClose/受控 vs 非受控}
-- {版本锁定：以 antd@6.x 当前类型为准}
+## 8. 示例清单（业务侧）
 
----
+- 基础渲染
+- 常用交互（如 copy/edit/ellipsis）
+- 受控与非受控对照
+- 失败与降级场景
 
-## 8. 代码示例（业务侧）
+## 9. 强约束
 
-- 8.1 基础用法
-- 8.2 常见流程（例如：加载 → 成功 / 校验 → 提交 / 批量操作）
-- 8.3 销毁/重置/更新
-- 8.4 回调/await/链式
+1. 严禁虚构 API 或事件
+2. TypeScript 类型必须完整，不允许 `any` 逃逸
+3. SSR 与卸载清理必须显式处理
+4. 安全策略必须默认开启（外链、HTML 注入等）
+5. 文档、代码、测试必须同版本同步
 
----
+## 10. 兼容与迁移说明
 
-## 9. 注意事项（强约束）
+- v5 -> v6 差异点与影响面
+- 行为差异与升级建议
+- 废弃 API 的替代路径
 
-1. {禁止业务直接调用的 antd API}
-2. {P0 必须遵循的规范：key、受控、容器、文案}
-3. {duration=0 / destroy / cleanup 等必备闭环}
-4. {可访问性：不要仅靠瞬时提示承载关键信息}
-5. {安全规范}
+## 11. 测试最小集
 
----
+- TC-001 默认渲染
+- TC-002 关键能力路径
+- TC-003 边界值与异常路径
+- TC-004 上下文一致性
+- TC-005 SSR 降级
 
-## 10. 版本差异与兼容说明（Ant Design v6）
+## 12. 交付定义（DoD）
 
-- {v5→v6 迁移差异点}
-- {类型/字段变化点与封装策略}
-- {对 thenable/回调时机的声明}
-
----
-
-## 11. 测试用例（最小集）
-
-- TC-001：{默认行为}
-- TC-002：{关键边界：duration=0 / destroy / update / maxCount}
-- TC-003：{上下文一致性：theme/locale/container}
-- TC-004：{SSR/非浏览器降级}
-
----
-
-## 12. 交付物（Definition of Done）
-
-- 封装模块：{入口、类型、全局配置、核心能力}
-- 接入：{Bridge/Provider} 已在 Root 生效
-- 文档：PRD + 使用示例
-- 测试：覆盖 {最关键能力点}
-
-```
-
-
-````
+- 代码：组件、类型、全局配置、导出已完成
+- 文档：PRD + API + 示例已完成
+- 测试：覆盖核心能力与边界
+- 验证：`build` 通过，关键用例通过

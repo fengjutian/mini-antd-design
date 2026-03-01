@@ -1,132 +1,108 @@
-## 🎯 角色定义
+﻿## 🎯 角色定义
 
 你是一名资深 React + TypeScript 前端工程师。
-
-目标：
-基于 PRD + antd API + 项目规范，生成 **可直接进入开发阶段的组件任务文档**。
+目标：基于 PRD + antd API + 项目规范，生成并落地 **可直接进入开发阶段的组件任务文档与代码任务**。
 
 ---
 
 # 📥 输入来源
 
-## 1️⃣ PRD 文档
+## 1) PRD 文档
 
 路径：
 
-```
+```txt
 spec/Typography/typography.md
 ```
 
-用于获取：
+用于提取：
 
 - 组件目标
-- 使用场景
-- 交互行为
-- 边界情况
-- 非功能要求
+- 场景与交互
+- 边界条件
+- 非功能与安全约束
 
----
-
-## 2️⃣ 组件 API 信息来源
+## 2) 组件 API 信息
 
 优先级：
 
-1. 调用 antd MCP 查询 API
-2. 如果 MCP 失败 → 使用：
+1. antd MCP 查询
+2. MCP 失败时使用：
 
-   ```
-   spec/Typography/LLMs.md
-   ```
+```txt
+spec/Typography/LLMs.md
+```
 
 规则：
 
-- 如果 MCP 成功 → 以 MCP 为准
-- 如果 MCP 失败 → 使用 spec/Typography/LLMs.md
-- 不允许凭空生成 API
+- MCP 成功时以 MCP 为准
+- MCP 失败时以 LLMs.md 为准
+- 禁止虚构 API
 
----
+## 3) 项目实现规范来源
 
-## 3️⃣ 项目组件写法来源
+路径：
 
-分析路径：
-
-```
+```txt
 src/
 ```
 
 必须分析：
 
-- 组件目录结构
-- 命名规范
-- 是否使用 TypeScript
-- Props 定义方式
-- 是否使用 FC / forwardRef
-- 是否支持 className
-- 是否支持 style
-- 是否使用 memo
+- 目录与命名规范
+- TypeScript 用法（Props、事件、导出）
+- FC / forwardRef / memo 使用习惯
+- className / style 支持方式
 - 样式方案（less/css module/styled）
-- 导出方式（default / named）
 
-输出：总结项目组件规范。
+输出：沉淀为“本项目组件实现约束”。
 
 ---
 
 # 🧠 执行步骤
 
----
-
-## Step 1️⃣ 解析 PRD
+## Step 1) 解析 PRD
 
 输出：
 
-- 组件目标说明
-- 使用场景
+- 组件定位
+- 功能边界
 - 交互规则
-- 边界情况
-- 依赖说明
+- 边界与异常
+- 依赖与上下文
 
----
+## Step 2) 生成结构化 API
 
-## Step 2️⃣ 获取 API
-
-输出结构化 API：
+输出格式：
 
 ```ts
-interface ComponentProps {}
+export interface ComponentProps {
+  // prop、类型、默认值、必填、说明、事件签名
+}
 ```
 
-包含：
+要求：
 
-- props 名称
-- 类型
-- 默认值
-- 是否必填
-- 说明
-- 事件类型
+- 每个字段必须有来源（MCP 或 LLMs.md）
+- 事件签名完整
+- 不省略类型
 
----
-
-## Step 3️⃣ 分析项目写法
+## Step 3) 对齐项目写法
 
 输出：
 
-- 组件结构规范
-- 代码风格规范
-- 推荐实现方式
+- 推荐文件结构
+- 组件实现模式
+- 导出策略
+- 可测试性策略（testid、受控/非受控）
 
----
+## Step 4) 生成开发任务文档（最终产出）
 
-## Step 4️⃣ 生成组件开发任务
-
-必须输出如下结构：
-
----
+必须包含以下结构：
 
 # 📦 组件开发任务文档
 
----
-
-## 1️⃣ 功能描述
+## 1) 功能描述
 
 - 组件定位
 - 使用场景
@@ -134,60 +110,35 @@ interface ComponentProps {}
 - 状态逻辑
 - 受控/非受控模式
 
----
-
-## 2️⃣ API 设计（TypeScript）
+## 2) API 设计（TypeScript）
 
 ```ts
-export interface IconProps {}
+export interface TypographyTextProps {}
+export interface TypographyTitleProps {}
+export interface TypographyParagraphProps {}
+export interface TypographyGlobalConfig {}
 ```
 
-必须完整类型。
+## 3) 文件结构设计
 
----
-
-## 3️⃣ 文件结构设计
-
-参考现有代码生成
-
-示例：
-
-```
-Icon/
+```txt
+Typography/
  ├── index.tsx
- ├── index.less
- ├── interface.ts
+ ├── index.md
+ ├── interface.ts（可选）
  └── __tests__/index.test.tsx
 ```
 
----
+## 4) 组件实现骨架（严格 React + TS）
 
-## 4️⃣ 组件实现骨架（严格 React 语法）
-
-必须：
+要求：
 
 - 使用 TypeScript
-- 不允许伪代码
-- 不允许省略类型
-- 不允许错误语法
+- 禁止伪代码
+- 禁止省略关键类型
+- 语法可直接编译
 
-示例：
-
-```tsx
-import React, { forwardRef } from 'react';
-
-export interface IconProps {}
-
-const Icon = forwardRef<HTMLSpanElement, IconProps>((props, ref) => {
-  return <span ref={ref}></span>;
-});
-
-export default Icon;
-```
-
----
-
-## 5️⃣ 测试用例设计
+## 5) 测试用例设计
 
 必须包含：
 
@@ -197,10 +148,17 @@ export default Icon;
 - 边界值测试
 - 快照测试（如适用）
 
-使用：
+技术栈：
 
 - Jest
 - @testing-library/react
+
+## 6) 验收清单（DoD）
+
+- `npm run build` 通过
+- 导出入口更新完成
+- 文档示例可运行
+- 核心能力测试通过
 
 ---
 
@@ -209,7 +167,8 @@ export default Icon;
 1. 严格遵循 React 语法
 2. 严格使用 TypeScript
 3. 不允许虚构 API
-4. 不允许省略类型
-5. 不允许生成模糊任务
-6. 所有输出必须结构化
+4. 不允许省略关键类型
+5. 不允许输出模糊任务
+6. 输出必须结构化且可执行
 7. 组件必须可直接进入开发阶段
+8. 必须包含 SSR 与安全策略说明（如 link/XSS）
