@@ -1,29 +1,39 @@
 import React, {
+  createContext,
   forwardRef,
+  useContext,
+  useEffect,
+  useMemo,
   type CSSProperties,
   type ComponentType,
+  type ReactNode,
 } from 'react';
 
-export interface IconProps {
-  className?: string;
+export interface IconProps extends React.HTMLAttributes<HTMLSpanElement> {
   rotate?: number;
   spin?: boolean;
   style?: CSSProperties;
-  twoToneColor?: string | string[];
-  component?: ComponentType<CustomIconComponentProps>;
+  twoToneColor?: TwoToneColor;
+  component?: ComponentType<any>;
 }
+
+export type TwoToneColor = string | [string, string];
 
 export interface CustomIconComponentProps {
   className?: string;
   style?: CSSProperties;
   rotate?: number;
   spin?: boolean;
+  twoToneColor?: TwoToneColor;
+  width?: string | number;
+  height?: string | number;
+  fill?: string;
   viewBox?: string;
   children?: React.ReactNode;
 }
 
 export interface CustomIconProps extends Omit<IconProps, 'twoToneColor'> {
-  component: ComponentType<CustomIconComponentProps>;
+  component: ComponentType<any>;
 }
 
 export interface IconfontCNOptions {
@@ -34,6 +44,8 @@ export interface IconfontCNOptions {
 export interface IconfontIconProps
   extends React.HTMLAttributes<HTMLSpanElement> {
   type: string;
+  spin?: boolean;
+  rotate?: number;
 }
 
 export interface IconGlobalConfig {
@@ -41,30 +53,132 @@ export interface IconGlobalConfig {
   iconfontScriptUrlWhitelist?: string[];
 }
 
+interface IconConfigContextValue {
+  defaultTwoToneColor: string;
+  iconfontScriptUrlWhitelist: string[];
+}
+
+const defaultGlobalConfig: IconConfigContextValue = {
+  defaultTwoToneColor: '#1890ff',
+  iconfontScriptUrlWhitelist: ['//at.alicdn.com'],
+};
+
+let globalConfig: IconConfigContextValue = {
+  ...defaultGlobalConfig,
+};
+let twoTonePrimaryColor = defaultGlobalConfig.defaultTwoToneColor;
+
+const IconConfigContext = createContext<IconConfigContextValue | null>(null);
+
+const isBrowser =
+  typeof window !== 'undefined' && typeof document !== 'undefined';
+const injectedScriptUrls = new Set<string>();
+
+const getGlobalConfig = (): IconConfigContextValue => {
+  return globalConfig;
+};
+
+const useIconConfig = (): IconConfigContextValue => {
+  return useContext(IconConfigContext) ?? getGlobalConfig();
+};
+
+const normalizeScriptUrls = (scriptUrl: string | string[]): string[] => {
+  return (Array.isArray(scriptUrl) ? scriptUrl : [scriptUrl]).filter(Boolean);
+};
+
+const canLoadScript = (url: string, whitelist: string[]): boolean => {
+  if (!whitelist.length) {
+    return true;
+  }
+  return whitelist.some((prefix) => url.startsWith(prefix));
+};
+
+const ensureIconfontScript = (url: string, whitelist: string[]): void => {
+  if (!isBrowser || injectedScriptUrls.has(url)) {
+    return;
+  }
+
+  if (!canLoadScript(url, whitelist)) {
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[Icon] Blocked iconfont scriptUrl "${url}". Add an allowed prefix to iconfontScriptUrlWhitelist.`,
+      );
+    }
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.setAttribute('data-iconfont', url);
+  script.src = url;
+  script.async = true;
+  document.body.appendChild(script);
+  injectedScriptUrls.add(url);
+};
+
 const getSpinClassName = (spin: boolean): string => {
   return spin ? 'anticon-spin' : '';
 };
 
-const Icon = forwardRef<HTMLSpanElement, IconProps>((props, ref) => {
-  const { className, rotate, spin, style, component, ...restProps } = props;
-
-  const innerStyle: CSSProperties = {
-    ...style,
-  };
-
-  if (rotate) {
-    innerStyle.transform = `rotate(${rotate}deg)`;
+const mergeRotateStyle = (
+  style: CSSProperties | undefined,
+  rotate: number | undefined,
+): CSSProperties => {
+  const merged: CSSProperties = { ...style };
+  if (rotate === undefined) {
+    return merged;
   }
 
-  const classNames = ['anticon', className, getSpinClassName(spin || false)]
+  const baseTransform = style?.transform ? `${style.transform} ` : '';
+  merged.transform = `${baseTransform}rotate(${rotate}deg)`.trim();
+  return merged;
+};
+
+const getPrimaryTwoToneColor = (
+  twoToneColor: TwoToneColor | undefined,
+): string | undefined => {
+  if (!twoToneColor) {
+    return undefined;
+  }
+  if (Array.isArray(twoToneColor)) {
+    return twoToneColor[0];
+  }
+  return twoToneColor;
+};
+
+const Icon = forwardRef<HTMLSpanElement, IconProps>((props, ref) => {
+  const {
+    className,
+    rotate,
+    spin = false,
+    style,
+    component,
+    twoToneColor,
+    ...restProps
+  } = props;
+  const config = useIconConfig();
+  const mergedStyle = mergeRotateStyle(style, rotate);
+  const effectiveTwoToneColor =
+    twoToneColor ?? config.defaultTwoToneColor ?? twoTonePrimaryColor;
+  const primaryColor = getPrimaryTwoToneColor(effectiveTwoToneColor);
+
+  if (primaryColor && !mergedStyle.color) {
+    mergedStyle.color = primaryColor;
+  }
+
+  const classNames = ['anticon', className, getSpinClassName(spin)]
     .filter(Boolean)
     .join(' ');
 
   const iconProps: CustomIconComponentProps = {
     className: 'anticon',
-    style: innerStyle,
+    style: mergedStyle,
     rotate,
     spin,
+    twoToneColor: effectiveTwoToneColor,
+    fill: 'currentColor',
+    width: '1em',
+    height: '1em',
   };
 
   if (component) {
@@ -77,7 +191,7 @@ const Icon = forwardRef<HTMLSpanElement, IconProps>((props, ref) => {
   }
 
   return (
-    <span ref={ref} className={classNames} style={innerStyle} {...restProps}>
+    <span ref={ref} className={classNames} style={mergedStyle} {...restProps}>
       <svg
         viewBox="0 0 1024 1024"
         fill="currentColor"
@@ -93,29 +207,117 @@ const Icon = forwardRef<HTMLSpanElement, IconProps>((props, ref) => {
 
 Icon.displayName = 'Icon';
 
-export const setTwoToneColor = (_color: string | string[]): void => {
-  // eslint-disable-line @typescript-eslint/no-unused-vars
+export const setTwoToneColor = (color: TwoToneColor): void => {
+  const nextColor = Array.isArray(color) ? color[0] : color;
+  if (!nextColor) {
+    return;
+  }
+  twoTonePrimaryColor = nextColor;
+  globalConfig = {
+    ...globalConfig,
+    defaultTwoToneColor: nextColor,
+  };
 };
 
 export const getTwoToneColor = (): string => {
-  return '#1890ff';
+  return twoTonePrimaryColor;
 };
 
 export const createFromIconfontCN = (
-  _options: IconfontCNOptions, // eslint-disable-line @typescript-eslint/no-unused-vars
+  options: IconfontCNOptions,
 ): ComponentType<IconfontIconProps> => {
+  const urls = normalizeScriptUrls(options.scriptUrl);
+  const extraCommonProps = options.extraCommonProps ?? {};
+  const { iconfontScriptUrlWhitelist } = getGlobalConfig();
+  urls.forEach((url) => ensureIconfontScript(url, iconfontScriptUrlWhitelist));
+
   const IconfontIcon = forwardRef<HTMLSpanElement, IconfontIconProps>(
     (props, ref) => {
-      const { type, ...restProps } = props;
-      return <Icon ref={ref} {...restProps} className={`iconfont-${type}`} />;
+      const { type, spin, rotate, className, style, ...restProps } = props;
+      const config = useIconConfig();
+
+      useEffect(() => {
+        urls.forEach((url) =>
+          ensureIconfontScript(url, config.iconfontScriptUrlWhitelist),
+        );
+      }, [config.iconfontScriptUrlWhitelist]);
+
+      const SvgComponent: React.FC<CustomIconComponentProps> = (
+        svgProps: CustomIconComponentProps,
+      ) => {
+        return (
+          <svg
+            viewBox="0 0 1024 1024"
+            width="1em"
+            height="1em"
+            fill="currentColor"
+            aria-hidden="true"
+            {...extraCommonProps}
+            {...svgProps}
+          >
+            <use xlinkHref={`#${type}`} />
+          </svg>
+        );
+      };
+
+      SvgComponent.displayName = `Iconfont_${type}`;
+
+      return (
+        <Icon
+          ref={ref}
+          component={SvgComponent}
+          className={['iconfont', `iconfont-${type}`, className]
+            .filter(Boolean)
+            .join(' ')}
+          spin={spin}
+          rotate={rotate}
+          style={style}
+          {...restProps}
+        />
+      );
     },
   );
   IconfontIcon.displayName = 'IconfontIcon';
   return IconfontIcon;
 };
 
-export const configureIcon = (_config: IconGlobalConfig): void => {
-  // eslint-disable-line @typescript-eslint/no-unused-vars
+export const configureIcon = (config: IconGlobalConfig): void => {
+  globalConfig = {
+    ...globalConfig,
+    ...config,
+    iconfontScriptUrlWhitelist:
+      config.iconfontScriptUrlWhitelist ??
+      globalConfig.iconfontScriptUrlWhitelist,
+  };
+
+  if (config.defaultTwoToneColor) {
+    setTwoToneColor(config.defaultTwoToneColor);
+  }
+};
+
+export interface IconProviderProps {
+  children: ReactNode;
+  config?: IconGlobalConfig;
+}
+
+export const IconProvider = (props: IconProviderProps): JSX.Element => {
+  const { children, config } = props;
+  const value = useMemo<IconConfigContextValue>(() => {
+    const merged: IconConfigContextValue = {
+      ...getGlobalConfig(),
+      ...config,
+      iconfontScriptUrlWhitelist:
+        config?.iconfontScriptUrlWhitelist ??
+        getGlobalConfig().iconfontScriptUrlWhitelist,
+    };
+    return merged;
+  }, [config]);
+
+  return (
+    <IconConfigContext.Provider value={value}>
+      {children}
+    </IconConfigContext.Provider>
+  );
 };
 
 export default Icon;

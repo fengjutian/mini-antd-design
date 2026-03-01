@@ -125,11 +125,14 @@ export interface TypographyGlobalConfig {}
 Typography/
  ├── index.tsx
  ├── index.md
+ ├── code/*.tsx（文档 demo 拆分）
  ├── interface.ts（可选）
  └── __tests__/index.test.tsx
 ```
 
 ## 4) 组件实现骨架（严格 React + TS）
+
+md 要求按照对应的 antd 组件中文文档
 
 要求：
 
@@ -138,7 +141,18 @@ Typography/
 - 禁止省略关键类型
 - 语法可直接编译
 
-## 5) 测试用例设计
+## 5) 文档生成能力（新增）
+
+必须补齐以下能力，避免“只有 API 无演示”：
+
+- 章节与 antd 中文文档一比一映射（何时使用、代码演示、API、Token、FAQ/说明）
+- 演示必须采用 dumi `<code src="./code/*.tsx" />`，不只放静态代码块
+- demo 文件按能力拆分（base/title/text-link/editable/copyable/ellipsis 等）
+- API 不仅写主组件，还要写子配置类型（如 `copyable`、`editable`、`ellipsis`）
+- 写清“antd 原生能力”与“本项目封装差异”对照，避免误导使用方
+- 文档示例必须可构建通过（至少 `npm run build`）
+
+## 6) 测试用例设计
 
 必须包含：
 
@@ -153,12 +167,14 @@ Typography/
 - Jest
 - @testing-library/react
 
-## 6) 验收清单（DoD）
+## 7) 验收清单（DoD）
 
 - `npm run build` 通过
 - 导出入口更新完成
 - 文档示例可运行
 - 核心能力测试通过
+- 文档章节与 antd 中文文档能力点对齐完成（无遗漏项）
+- API 表格与示例一致（字段、默认值、事件签名一致）
 
 ---
 
@@ -172,3 +188,4 @@ Typography/
 6. 输出必须结构化且可执行
 7. 组件必须可直接进入开发阶段
 8. 必须包含 SSR 与安全策略说明（如 link/XSS）
+9. 文档页必须可直接作为 dumi 页面渲染（含 demo）

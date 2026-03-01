@@ -2,7 +2,7 @@
 
 # GitNexus MCP
 
-This project is indexed by GitNexus as **mini-antd-design** (99 symbols, 133 relationships, 4 execution flows).
+This project is indexed by GitNexus as **mini-antd-design** (148 symbols, 198 relationships, 4 execution flows).
 
 ## Always Start Here
 
