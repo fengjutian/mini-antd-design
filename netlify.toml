@@ -2,6 +2,11 @@
   command = "npm run docs:build"
   publish = "docs-dist"
 
+[build.environment]
+  NPM_FLAGS = "--include=dev"
+  NPM_CONFIG_PRODUCTION = "false"
+  HUSKY = "0"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
