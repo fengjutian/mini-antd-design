@@ -1,3 +1,11 @@
+---
+toc: content
+demo:
+  cols: 2
+---
+
+<!-- 其他 Markdown 内容 -->
+
 # 全局提示 Message
 
 全局展示操作反馈信息。
@@ -8,7 +16,7 @@
 
 ## 代码演示
 
-### 基础用法
+#### 基础用法
 
 通过 `message.useMessage` 创建支持读取 context 的 `contextHolder`。
 
@@ -16,13 +24,13 @@
 
 <code src="./code/base.tsx" title="基本用法"></code>
 
-### 自定义时长
+#### 自定义时长
 
 自定义时长 10s，默认时长为 3s。
 
 <code src="./code/config.tsx" title="自定义时长"></code>
 
-### Promise 接口
+#### Promise 接口
 
 可以通过 `then` 接口在关闭后运行 callback 。
 
@@ -30,13 +38,13 @@
 
 <code src="./code/promise.tsx" title="Promise 接口"></code>
 
-### 自定义样式
+#### 自定义样式
 
 通过 `classNames` 和 `styles` 传入对象/函数可以自定义消息的语义化结构样式。
 
 <code src="./code/custom.tsx" title="自定义样式"></code>
 
-### 更新消息内容
+#### 更新消息内容
 
 可以通过唯一的 `key` 来更新内容。
 
