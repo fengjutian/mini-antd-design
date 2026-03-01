@@ -1,3 +1,4 @@
+import { StarTwoTone } from '@ant-design/icons';
 import React from 'react';
 import Icon, { getTwoToneColor, setTwoToneColor } from '../index';
 
@@ -19,8 +20,16 @@ export default () => {
       }}
     >
       <div style={{ display: 'flex', gap: 16 }}>
-        <Icon />
-        <Icon style={{ color: '#1890ff' }} />
+        <Icon
+          component={StarTwoTone}
+          twoToneColor={currentColor}
+          style={{ fontSize: 24 }}
+        />
+        <Icon
+          component={StarTwoTone}
+          twoToneColor="#1890ff"
+          style={{ fontSize: 24 }}
+        />
       </div>
       <div>
         <p>当前双色主色: {currentColor}</p>
