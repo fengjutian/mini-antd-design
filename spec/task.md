@@ -14,7 +14,7 @@
 路径：
 
 ```
-spec/icons/icons.md
+spec/Typography/typography.md
 ```
 
 用于获取：
@@ -35,13 +35,13 @@ spec/icons/icons.md
 2. 如果 MCP 失败 → 使用：
 
    ```
-   spec/icons/icons-cn.md
+   spec/Typography/LLMs.md
    ```
 
 规则：
 
 - 如果 MCP 成功 → 以 MCP 为准
-- 如果 MCP 失败 → 使用 icons-cn.md
+- 如果 MCP 失败 → 使用 spec/Typography/LLMs.md
 - 不允许凭空生成 API
 
 ---
@@ -147,6 +147,8 @@ export interface IconProps {}
 ---
 
 ## 3️⃣ 文件结构设计
+
+参考现有代码生成
 
 示例：
 

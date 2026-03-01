@@ -1,42 +1,3 @@
-## 一、PRD 合理性评估（针对“全局 Message/Toast 封装”）
-
-整体评价：这份 PRD **结构完整、边界清晰、可落地**，并且抓住了 Ant Design v6 的关键点（**优先实例 API / App.useApp 消费上下文**，静态 API 仅兜底）。作为“组件迁移 + 二次封装”的 PRD，已经具备交付级别。
-
-### 做得很好的点
-
-- **目标与范围**写得明确：只做 message/toast 统一封装，不扩展到 Notification/历史中心，避免失控。
-- **FR + AC**齐全：每条能力都有验收标准，利于评审与测试。
-- **关键业务流（loading→success/error）**用 `key` 更新强约束，这是最常见痛点。
-- **上下文一致性**：提出 Bridge 注入实例 message，符合 antd v6 推荐方式。
-- **Edge Cases**涵盖 SSR、防刷屏、路由切换、XSS 文案安全等，属于“封装层必须考虑”的点。
-- **交付物/DoD/最小测试集**清晰，方便团队协作。
-
-### 建议补强/澄清的点（让 PRD 更“组件化可复用”）
-
-1. **Thenable 类型定义不够严谨**  
-   PRD 里 `Thenable` 未定义。建议明确：返回值与 antd message.open 返回一致（通常是可 then 的 closePromise/thenable），并写清“关闭触发 then”的期望与限制。
-2. **“全局配置 configureToast”与 antd message.config 的关系**  
-   你写了“业务不要 message.config()”，但封装内部是否允许调用一次？建议补一句：
-   - 实例模式（App message）优先走实例的配置能力；
-   - 静态兜底时才调用 `message.config`（且仅初始化一次）。
-3. **容器策略的默认值与路由切换策略**  
-   `getContainer` 的默认策略最好明确：默认 `document.body`，以及在微前端/多 React Root 情况下如何处理（例如挂到应用根节点）。
-4. **重复注入/热更新行为**  
-   Bridge 每次 render 都 set 实例：是否需要幂等、是否允许后注入覆盖前注入（通常允许覆盖，并在 dev 打 log）。
-5. **API 约束再收敛一点更“统一体验”**  
-   你开放了 `icon/style/className`，但 NFR 又强调统一体验；建议写明：
-   - 默认不建议业务使用 style/className；
-   - 如果要用，必须走设计系统 token 或白名单 class（否则样式会碎片化）。
-6. **错误文案规范可以再工程化**  
-   现在是“注意事项”。如果团队常踩坑，可加“错误码/后端 msg 透传策略”（例如：只显示可读 msg，技术细节打点/日志）。
-
----
-
-## 二、可复用的“组件二次封装 PRD 模板”（适用于迁移/封装任意 antd v6 组件）
-
-> 这是一个“填空式模板”，保留你这份 PRD 的优点：范围、FR/AC、NFR、边界、API、实现建议、测试与 DoD。你可以用它来写 Modal/Table/Form/Upload/Notification 等封装 PRD。
-
-````markdown
 # PRD：{组件能力封装名称}（Ant Design v6）
 
 ## 0. 背景与目标
@@ -166,6 +127,7 @@ export interface {Component}API {
   // {destroy/reset/update...}
 }
 ```
+
 ````
 
 ### 6.2 全局配置（应用初始化一次）
@@ -246,7 +208,5 @@ export function configure{Component}(config: {Component}GlobalConfig): void;
 
 ```
 
----
 
-如果你希望我把“Message/Toast PRD”进一步抽象成“组件封装规范”（含：统一命名、目录结构、lint 约束、禁止直接 import antd 的规则、以及单测/Storybook 模板），告诉我你们的技术栈（Vite/Next.js、测试用 vitest/jest、是否微前端、多主题方案）。
-```
+````
